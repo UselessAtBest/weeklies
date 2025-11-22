@@ -1,320 +1,202 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Weeklies List</title>
-  <style>
-    :root{
-      --bg: #121826;
-      --card-bg: #1a2234;
-      --text: #f0f4ff;
-      --btn-bg: #0f1624;
-      --btn-done-bg: #2a3144;
-      --reset-bg: #cf7777;
-      --card-radius: 14px;
-      --btn-radius: 10px;
-      --font-size: 15px;
-    }
-
-    body{font-family:sans-serif;background:var(--bg);color:var(--text);margin:0;padding:40px;display:flex;justify-content:center}
-    .card{background:var(--card-bg);border-radius:var(--card-radius);padding:24px;width:360px;box-shadow:0 8px 20px rgba(0,0,0,0.4)}
-    /* header row: title left, toolbar right */
-    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px}
-    h1{margin:0;font-size:20px;color:var(--text)}
-
-    /* toolbar sits inline with h1 */
-    .toolbar{display:flex;gap:8px;margin:0}
-
-    /* restore old theme button style (matches previous look) */
-    .theme-btn{padding:8px 10px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);border-radius:8px;cursor:pointer}
-    .todo-btn{display:block;width:100%;text-align:center;padding:12px 14px;background:var(--btn-bg);border-radius:var(--btn-radius);margin-bottom:10px;font-size:var(--font-size);color:var(--text);border:none;cursor:pointer}
-    .todo-btn.done{opacity:0.5;text-decoration:line-through;background:var(--btn-done-bg)}
-
-    #resetBtn{margin-top:14px;width:100%;padding:12px;border:none;border-radius:var(--btn-radius);background:var(--reset-bg);color:var(--text);font-weight:700;cursor:pointer;font-size:var(--font-size)}
-
-    /* Theme dropdown */
-    .theme-panel{position:relative}
-    .theme-dropdown{position:absolute;right:0;top:40px;background:var(--card-bg);border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,0.4);min-width:260px;z-index:10}
-    .theme-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0}
-    .theme-row label{font-size:13px;color:var(--text);margin-right:8px}
-    .theme-row input[type="color"]{width:46px;height:30px;border:0;padding:0;background:transparent}
-    .theme-row input[type="range"]{width:140px}
-    .theme-actions{display:flex;gap:8px;margin-top:8px}
-    .small-btn{padding:8px;border-radius:8px;border:none;cursor:pointer}
-    .small-btn.save{background:#2a8f7f;color:#fff}
-    .small-btn.reset{background:#cf7777;color:#fff}
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editable Toggle Site</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="card">
-    <div class="header">
-      <h1>Weaklies</h1>
-      <div class="toolbar" aria-label="theme toolbar">
-        <div class="theme-panel">
-          <button id="themeToggle" class="theme-btn">Theme ▾</button>
-          <div id="themeDropdown" class="theme-dropdown" style="display:none">
-            <div class="theme-row">
-              <label>Background</label>
-              <input id="bgColor" type="color" value="#121826">
-            </div>
-            <div class="theme-row">
-              <label>Card</label>
-              <input id="cardColor" type="color" value="#1a2234">
-            </div>
-            <div class="theme-row">
-              <label>Text</label>
-              <input id="textColor" type="color" value="#f0f4ff">
-            </div>
-            <div class="theme-row">
-              <label>Button</label>
-              <input id="btnColor" type="color" value="#0f1624">
-            </div>
-            <div class="theme-row">
-              <label>Done</label>
-              <input id="doneColor" type="color" value="#2a3144">
-            </div>
-            <div class="theme-row">
-              <label>Reset</label>
-              <input id="resetColor" type="color" value="#cf7777">
-            </div>
-            <div class="theme-row">
-              <label>Font size</label>
-              <input id="fontSize" type="range" min="12" max="20" value="15">
-            </div>
-            <div class="theme-actions">
-              <button id="saveTheme" class="small-btn save">Save</button>
-              <button id="resetTheme" class="small-btn reset">Reset</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <div id="list">
-      <button class="todo-btn">Acrithis Shop</button>
-      <button class="todo-btn">Teshin SP Honours</button>
-      <button class="todo-btn">Iron Wake</button>
-      <button class="todo-btn">Bird 3</button>
-      <button class="todo-btn">Yonta</button>
-      <br><br><br>
-      <button class="todo-btn">Archon Hunt</button>
-      <button class="todo-btn">Ayatan Hunt</button>
-      <button class="todo-btn">EDA / ETA</button>
-      <button class="todo-btn">Nightwave</button>
-      <button class="todo-btn">1999 Calendar</button>
-      <button class="todo-btn">Circuit</button>
-    </div>
+<div id="main">
+  <h1>Task Toggles</h1>
+  <div id="taskList"></div>
+  <button id="editBtn">Toggle Edit Menu</button>
+  <button id="resetBtn">Reset All</button>
 
-    <button id="resetBtn">Reset</button>
+  <div id="editMenu">
+    <h3>Edit Theme</h3>
+    <div class="color-picker"><label>Page Background</label><input type="color" id="bgPicker"></div>
+    <div class="color-picker"><label>Text</label><input type="color" id="textPicker"></div>
+    <div class="color-picker"><label>Completed</label><input type="color" id="btnOffPicker"></div>
+    <div class="color-picker"><label>Uncompelted</label><input type="color" id="btnOnPicker"></div>
+    <div class="color-picker"><label>Edit Button</label><input type="color" id="editBtnPicker"></div>
+    <div class="color-picker"><label>Reset Button</label><input type="color" id="resetBtnPicker"></div>
+    <div class="color-picker"><label>Edit Menu Background</label><input type="color" id="editMenuBgPicker"></div>
+    <div class="color-picker"><label>Text Size </label><input type="range" id="textSizePicker" min="8" max="48" value="16"> <span id="textSizeValue">16</span> px</div>
+    <div class="color-picker"><label>Font</label><select id="fontPicker"></select></div>
   </div>
+</div>
 
-  <script>
-    const STORAGE_KEY = 'simple_todo_state_v2_btn';
-    const THEME_KEY = 'simple_todo_theme_v1';
-    const todos = document.querySelectorAll('.todo-btn');
+<script>
+let tasks = [];
+let state = [];
+let visibility = [];
+const presetFonts = ["Arial", "Verdana", "Tahoma", "Georgia", "Courier New", "Times New Roman"];
 
-    function save(){
-      const state = Array.from(todos).map(t => t.classList.contains('done'));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
+// Default theme colors
+const defaultTheme = {
+  '--bg': '#1a1a1a',
+  '--fg': '#e6e6e6',
+  '--btn-bg': '#333',
+  '--btn-active': '#4caf50',
+  '--edit-btn': '#444',
+  '--reset-btn': '#444',
+  '--edit-menu-bg': '#222',
+  '--btn-text-size': '16',
+  '--font-family': 'Arial'
+};
 
-    function load(){
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return;
-      try{
-        const state = JSON.parse(raw);
-        todos.forEach((t,i)=>{
-          if(state[i]) t.classList.add('done');
-        });
-      }catch{}
-    }
+async function loadTasks() {
+  const res = await fetch('tasks.json');
+  const data = await res.json();
+  tasks = data.tasks;
 
-    todos.forEach(t => {
-      t.addEventListener('click', ()=>{
-        t.classList.toggle('done');
-        save();
-      });
+  state = JSON.parse(localStorage.getItem('state')) || tasks.map(() => false);
+  visibility = JSON.parse(localStorage.getItem('visibility')) || tasks.map(() => true);
+
+  renderTasks();
+}
+
+const taskList = document.getElementById('taskList');
+const editMenu = document.getElementById('editMenu');
+const editBtn = document.getElementById('editBtn');
+const resetBtn = document.getElementById('resetBtn');
+const fontPicker = document.getElementById('fontPicker');
+const textSizePicker = document.getElementById('textSizePicker');
+const textSizeValue = document.getElementById('textSizeValue');
+const editMenuBgPicker = document.getElementById('editMenuBgPicker');
+
+presetFonts.forEach(f => {
+  const option = document.createElement('option');
+  option.value = f;
+  option.textContent = f;
+  fontPicker.appendChild(option);
+});
+
+const colorInputs = {
+  bgPicker: '--bg',
+  textPicker: '--fg',
+  btnOffPicker: '--btn-bg',
+  btnOnPicker: '--btn-active',
+  editBtnPicker: '--edit-btn',
+  resetBtnPicker: '--reset-btn',
+  editMenuBgPicker: '--edit-menu-bg',
+  textSizePicker: '--btn-text-size',
+  fontPicker: '--font-family'
+};
+
+// Initialize theme with saved values or defaults
+Object.keys(colorInputs).forEach(id => {
+  const varName = colorInputs[id];
+  let saved = localStorage.getItem(varName);
+  if (!saved) saved = defaultTheme[varName];
+
+  if(id === 'textSizePicker') {
+    document.documentElement.style.setProperty(varName, saved + 'px');
+    textSizePicker.value = saved;
+    textSizeValue.textContent = saved;
+  } else if(id === 'fontPicker') {
+    document.documentElement.style.setProperty(varName, saved);
+    fontPicker.value = saved;
+  } else {
+    document.documentElement.style.setProperty(varName, saved);
+    if(id === 'editMenuBgPicker') editMenu.style.background = saved;
+  }
+});
+
+textSizePicker.addEventListener('input', e => {
+  const val = e.target.value;
+  document.documentElement.style.setProperty('--btn-text-size', val + 'px');
+  textSizeValue.textContent = val;
+  localStorage.setItem('--btn-text-size', val);
+});
+
+fontPicker.addEventListener('change', e => {
+  const val = e.target.value;
+  document.documentElement.style.setProperty('--font-family', val);
+  localStorage.setItem('--font-family', val);
+});
+
+editMenuBgPicker.addEventListener('input', e => {
+  const val = e.target.value;
+  document.documentElement.style.setProperty('--edit-menu-bg', val);
+  editMenu.style.background = val;
+  localStorage.setItem('--edit-menu-bg', val);
+});
+
+Object.keys(colorInputs).forEach(id => {
+  if(!['textSizePicker','fontPicker','editMenuBgPicker'].includes(id)) {
+    const el = document.getElementById(id);
+    el.addEventListener('input', e => {
+      const val = e.target.value;
+      document.documentElement.style.setProperty(colorInputs[id], val);
+      localStorage.setItem(colorInputs[id], val);
     });
+  }
+});
 
-    document.getElementById('resetBtn').onclick = ()=>{
-      todos.forEach(t=>t.classList.remove('done'));
+function save() {
+  localStorage.setItem('state', JSON.stringify(state));
+  localStorage.setItem('visibility', JSON.stringify(visibility));
+}
+
+function renderTasks() {
+  taskList.innerHTML = '';
+  const editOpen = editMenu.classList.contains('open');
+
+  tasks.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'task-row';
+
+    const btn = document.createElement('button');
+    btn.className = 'toggle' + (state[i] ? ' active' : '');
+    btn.textContent = t.label || t.name || 'Task';
+    btn.style.fontSize = `var(--btn-text-size)`;
+    btn.style.fontFamily = `var(--font-family)`;
+    btn.onclick = () => {
+      state[i] = !state[i];
       save();
+      renderTasks();
     };
 
-    load();
+    if(editOpen && !visibility[i]) btn.style.opacity = '0.3';
+    else if(!editOpen && !visibility[i]) row.style.display = 'none';
+    else {
+      btn.style.opacity = '1';
+      row.style.display = 'flex';
+    }
 
-    // Theme controls
-    const themeToggle = document.getElementById('themeToggle');
-    const themeDropdown = document.getElementById('themeDropdown');
-    const inputs = {
-      bgColor: document.getElementById('bgColor'),
-      cardColor: document.getElementById('cardColor'),
-      textColor: document.getElementById('textColor'),
-      btnColor: document.getElementById('btnColor'),
-      doneColor: document.getElementById('doneColor'),
-      resetColor: document.getElementById('resetColor'),
-      fontSize: document.getElementById('fontSize'),
+    row.appendChild(btn);
+
+    const showHide = document.createElement('button');
+    showHide.className = 'showhide';
+    showHide.textContent = visibility[i] ? 'Hide' : 'Show';
+    showHide.style.display = editOpen ? 'block' : 'none';
+    showHide.onclick = () => {
+      visibility[i] = !visibility[i];
+      save();
+      renderTasks();
     };
+    row.appendChild(showHide);
 
-    const defaults = {
-      '--bg':'#121826',
-      '--card-bg':'#1a2234',
-      '--text':'#f0f4ff',
-      '--btn-bg':'#0f1624',
-      '--btn-done-bg':'#2a3144',
-      '--reset-bg':'#cf7777',
-      '--font-size':'15px'
-    };
+    taskList.appendChild(row);
+  });
+}
 
-    function applyTheme(theme){
-      const root = document.documentElement;
-      Object.keys(theme).forEach(k=>{
-        root.style.setProperty(k, theme[k]);
-      });
-      // update color inputs without triggering events
-      if(theme['--bg']) inputs.bgColor.value = rgbToHex(getComputedStyle(document.documentElement).getPropertyValue('--bg') || theme['--bg']);
-      if(theme['--card-bg']) inputs.cardColor.value = rgbToHex(getComputedStyle(document.documentElement).getPropertyValue('--card-bg') || theme['--card-bg']);
-      if(theme['--text']) inputs.textColor.value = rgbToHex(getComputedStyle(document.documentElement).getPropertyValue('--text') || theme['--text']);
-      if(theme['--btn-bg']) inputs.btnColor.value = rgbToHex(getComputedStyle(document.documentElement).getPropertyValue('--btn-bg') || theme['--btn-bg']);
-      if(theme['--btn-done-bg']) inputs.doneColor.value = rgbToHex(getComputedStyle(document.documentElement).getPropertyValue('--btn-done-bg') || theme['--btn-done-bg']);
-      if(theme['--reset-bg']) inputs.resetColor.value = rgbToHex(getComputedStyle(document.documentElement).getPropertyValue('--reset-bg') || theme['--reset-bg']);
-      if(theme['--font-size']) inputs.fontSize.value = parseInt(theme['--font-size']);
-    }
+editBtn.onclick = () => {
+  editMenu.classList.toggle('open');
+  renderTasks();
+};
 
-    function saveTheme(theme){
-      localStorage.setItem(THEME_KEY, JSON.stringify(theme));
-    }
+resetBtn.onclick = () => {
+  state = state.map(() => false);
+  save();
+  renderTasks();
+};
 
-    function loadTheme(){
-      const raw = localStorage.getItem(THEME_KEY);
-      if(!raw) {
-        applyTheme(defaults);
-        return;
-      }
-      try{
-        const theme = JSON.parse(raw);
-        applyTheme(theme);
-      }catch{
-        applyTheme(defaults);
-      }
-    }
+loadTasks();
+</script>
 
-    function rgbToHex(value){
-      // value may already be a hex
-      value = value.trim();
-      if(value[0]==='#') return value;
-      // handle rgb(a)
-      const m = value.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
-      if(!m) return value;
-      const r = parseInt(m[1]), g = parseInt(m[2]), b = parseInt(m[3]);
-      return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
-    }
-
-    // Toggle dropdown
-    themeToggle.addEventListener('click', ()=> {
-      themeDropdown.style.display = themeDropdown.style.display === 'none' ? 'block' : 'none';
-    });
-
-    // Close when clicking outside
-    document.addEventListener('click', (e)=>{
-      if(!themeDropdown.contains(e.target) && e.target !== themeToggle){
-        themeDropdown.style.display = 'none';
-      }
-    });
-
-    // Persist current computed theme into an inline style so saved file contains the theme
-    function getComputedTheme(){
-      const root = getComputedStyle(document.documentElement);
-      return {
-        '--bg': root.getPropertyValue('--bg').trim() || defaults['--bg'],
-        '--card-bg': root.getPropertyValue('--card-bg').trim() || defaults['--card-bg'],
-        '--text': root.getPropertyValue('--text').trim() || defaults['--text'],
-        '--btn-bg': root.getPropertyValue('--btn-bg').trim() || defaults['--btn-bg'],
-        '--btn-done-bg': root.getPropertyValue('--btn-done-bg').trim() || defaults['--btn-done-bg'],
-        '--reset-bg': root.getPropertyValue('--reset-bg').trim() || defaults['--reset-bg'],
-        '--font-size': root.getPropertyValue('--font-size').trim() || defaults['--font-size'],
-      };
-    }
-
-    function injectPersistedStyle(theme){
-      let el = document.getElementById('persistedTheme');
-      const css = ':root{' + Object.entries(theme).map(([k,v])=>`${k}:${v};`).join('') + '}';
-      if(!el){
-        el = document.createElement('style');
-        el.id = 'persistedTheme';
-        document.head.appendChild(el);
-      }
-      el.textContent = css;
-    }
-
-    // Debounce helper to avoid excessive writes
-    function debounce(fn, wait){
-      let t;
-      return (...args)=>{
-        clearTimeout(t);
-        t = setTimeout(()=>fn(...args), wait);
-      };
-    }
-
-    // Build theme object from current inputs
-    function themeFromInputs(){
-      return {
-        '--bg': inputs.bgColor.value,
-        '--card-bg': inputs.cardColor.value,
-        '--text': inputs.textColor.value,
-        '--btn-bg': inputs.btnColor.value,
-        '--btn-done-bg': inputs.doneColor.value,
-        '--reset-bg': inputs.resetColor.value,
-        '--font-size': inputs.fontSize.value + 'px'
-      };
-    }
-
-    // Auto-save (to localStorage) and inject persisted style on every change (debounced)
-    const autoSave = debounce(()=>{
-      const theme = themeFromInputs();
-      // save to localStorage (this is what makes changes persist after refresh)
-      saveTheme(theme);
-      // also inject inline style so if user saves the file later it contains the theme
-      injectPersistedStyle(theme);
-    }, 300);
-
-    // Live updates + auto-save
-    Object.entries(inputs).forEach(([key, el])=>{
-      el.addEventListener('input', ()=>{
-        const root = document.documentElement;
-        switch(key){
-          case 'bgColor': root.style.setProperty('--bg', el.value); break;
-          case 'cardColor': root.style.setProperty('--card-bg', el.value); break;
-          case 'textColor': root.style.setProperty('--text', el.value); break;
-          case 'btnColor': root.style.setProperty('--btn-bg', el.value); break;
-          case 'doneColor': root.style.setProperty('--btn-done-bg', el.value); break;
-          case 'resetColor': root.style.setProperty('--reset-bg', el.value); break;
-          case 'fontSize': root.style.setProperty('--font-size', el.value + 'px'); break;
-        }
-        // persist immediately (debounced)
-        autoSave();
-      });
-    });
-
-    // Save and reset theme buttons (Save still writes to localStorage; kept for manual save if needed)
-    document.getElementById('saveTheme').addEventListener('click', ()=>{
-      const theme = themeFromInputs();
-      saveTheme(theme);
-      injectPersistedStyle(theme);
-      themeDropdown.style.display = 'none';
-    });
-
-    document.getElementById('resetTheme').addEventListener('click', ()=>{
-      applyTheme(defaults);
-      saveTheme(defaults);
-      injectPersistedStyle(defaults);
-    });
-
-    // initialize theme
-    loadTheme();
-    // ensure inline style reflects loaded theme so refresh + "save file" actions include it
-    injectPersistedStyle(getComputedTheme());
-  </script>
 </body>
 </html>

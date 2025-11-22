@@ -1,0 +1,154 @@
+:root {
+  --bg: #1a1a1a;
+  --fg: #e6e6e6;
+  --btn-bg: #333;
+  --btn-active: #4caf50;
+  --edit-btn: #444;
+  --reset-btn: #444;
+  --transition: 0.3s;
+  --text-size: 16px;
+  --font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--text-size);
+  background: var(--bg);
+  color: var(--fg);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100vh;
+  transition: background var(--transition), color var(--transition), font-size var(--transition), font-family var(--transition);
+}
+
+#main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--text-size);
+  font-family: var(--font-family);
+  position: relative; /* anchor for edit menu */
+}
+
+#editMenu {
+  position: absolute;
+  right: 110%; /* appear to the left of #main */
+  top: 8%;
+  width: 260px;
+  background: #222;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  display: none;
+  opacity: 0;
+  transform: translateX(-15px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  font-size: var(--text-size);
+  font-family: var(--font-family);
+  z-index: 10;
+}
+
+#editMenu.open {
+  display: block;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.task-row {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+button.toggle {
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: var(--btn-bg);
+  cursor: pointer;
+  transition: background var(--transition), transform 0.2s ease, font-size var(--transition), font-family var(--transition);
+  flex: 1;
+  margin-right: 10px;
+  color: var(--fg);
+  font-size: var(--text-size);
+  font-family: var(--font-family);
+}
+
+button.toggle.active {
+  background: var(--btn-active);
+  color: #fff;
+  transform: scale(1.03);
+}
+
+.showhide {
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  background: #555;
+  cursor: pointer;
+  color: var(--fg);
+  display: none;
+  transition: opacity 0.25s ease, font-size var(--transition), font-family var(--transition);
+  font-size: var(--text-size);
+  font-family: var(--font-family);
+}
+
+#editBtn, #resetBtn {
+  margin-top: 20px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--fg);
+  transition: background var(--transition), transform 0.2s ease, font-size var(--transition), font-family var(--transition);
+  font-size: var(--text-size);
+  font-family: var(--font-family);
+}
+
+#editBtn:hover, #resetBtn:hover {
+  transform: scale(1.05);
+}
+
+#editBtn {
+  background: var(--edit-btn);
+}
+
+#resetBtn {
+  background: var(--reset-btn);
+}
+
+.color-picker {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--text-size);
+  font-family: var(--font-family);
+}
+
+/* Modern color pickers */
+#editMenu input[type="color"] {
+  -webkit-appearance: none;
+  border: none;
+  width: 40px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+#editMenu input[type="color"]:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+#editMenu input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
