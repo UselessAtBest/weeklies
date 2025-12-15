@@ -1,23 +1,25 @@
 {
   "tasks": [
-    { "id": "task1", "name": "Acrithis Shop" },
-    { "id": "task2", "name": "Teshin - SP Honours" },
-    { "id": "task3", "name": "Iron Wake - Rivens" },
-    { "id": "task4", "name": "Bird 3 - Shard" },
-    { "id": "task5", "name": "Yonta - Kuva" },
-    { "id": "task6", "name": "Archon Hunt" },
-    { "id": "task7", "name": "Ayatan Hunt" },
-    { "id": "task8", "name": "Help Clem" },
-    { "id": "task9", "name": "EDA" },
-    { "id": "task9", "name": "ETA " },
-    { "id": "task95", "name": "Netracell" },
-    { "id": "task10", "name": "Nightwave" },
-    { "id": "task11", "name": "1999 Calendar" },
-    { "id": "task12", "name": "Circuit" },
-    { "id": "task13", "name": "Invigorations" }
-    
-
-    
+    { "id": "task1",  "name": "Acrithis Shop",       "label": "Acrithis Shop" },
+    { "id": "task2",  "name": "Teshin - SP Honours", "label": "Teshin - SP Honours" },
+    { "id": "task3",  "name": "Iron Wake - Rivens",  "label": "Iron Wake - Rivens" },
+    { "id": "task4",  "name": "Bird 3 - Shard",      "label": "Bird 3 - Shard" },
+    { "id": "task5",  "name": "Yonta - Kuva",        "label": "Yonta - Kuva" },
+    { "id": "task6",  "name": "Archon Hunt",         "label": "Archon Hunt" },
+    { "id": "task7",  "name": "Ayatan Hunt",         "label": "Ayatan Hunt" },
+    { "id": "task8",  "name": "Help Clem",           "label": "Help Clem" },
+   [
+    { "id": "task9",  "name": "EDA",                 "label": "EDA" },
+    { "id": "task10", "name": "ETA",                 "label": "ETA" } ],
+    { "id": "task11", "name": "Netracell",           "label": "Netracell" },
+    { "id": "task12", "name": "Nightwave",           "label": "Nightwave" },
+    { "id": "task13", "name": "1999 Calendar",       "label": "1999 Calendar" },
+    { "id": "task14", "name": "Circuit",             "label": "Circuit" },
+    { "id": "task18", "name": "Decendia",            "label": "Decendia" },
+   [
+    { "id": "task15",  "name": "Invigoration1",                 "label": "Invig 1" },
+    { "id": "task16",  "name": "Invigoration2",                 "label": "Invig 2" },
+    { "id": "task17",  "name": "Invigoration3",                 "label": "Invig 3" } ]
   ]
 }
 

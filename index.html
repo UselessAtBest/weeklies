@@ -5,14 +5,99 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Warframe Weeklies Checklist</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- Added CSS: equal-width buttons per row and small padding between them -->
+  <style>
+    :root{
+      --btn-gap: 8px;
+      --showhide-width: 56px;
+      --btn-padding-vertical: 8px;
+      --btn-padding-horizontal: 12px;
+    }
+
+    /* row container */
+    .task-row {
+      display: flex;
+      gap: var(--btn-gap);
+      margin-bottom: 8px;
+      align-items: stretch;
+    }
+
+    /* each task cell becomes a flex item that shares available width equally */
+    .task-item {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex: 1 1 0;
+      min-width: 0; /* allow children to shrink properly */
+    }
+
+    /* main button takes remaining space inside the item */
+    .task-item .toggle {
+      flex: 1 1 0;
+      width: 100%;
+      padding: var(--btn-padding-vertical) var(--btn-padding-horizontal);
+      box-sizing: border-box;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* small show/hide button kept for compatibility (per-item) */
+    .task-item .showhide {
+      flex: 0 0 var(--showhide-width);
+      width: var(--showhide-width);
+      padding: 6px;
+      box-sizing: border-box;
+    }
+
+    /* row-level control: fixed-size control at end of row that hides/shows the whole line */
+    .row-control {
+      flex: 0 0 var(--showhide-width);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--showhide-width);
+      box-sizing: border-box;
+    }
+    .row-control button { padding:6px; }
+
+    /* Use the same styling the edit button used previously for consistency */
+    /* (these rely on theme vars set by the edit menu: --edit-btn, --reset-btn, --fg, --btn-text-size, --font-family) */
+    #editBtn, #resetBtn, .row-control button {
+      background: var(--edit-btn);
+      color: var(--fg);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 6px 10px;
+      box-sizing: border-box;
+      font-size: calc(var(--btn-text-size) - 2px);
+      font-family: var(--font-family);
+    }
+
+    /* reset button uses its own accent */
+    #resetBtn {
+      background: var(--reset-btn);
+    }
+
+    /* small hover / active affordances */
+    #editBtn:hover, .row-control button:hover, #resetBtn:hover {
+      filter: brightness(1.06);
+    }
+
+    /* active state for row-control can indicate hidden/shown */
+    .row-control button[data-hidden="true"] {
+      opacity: 0.6;
+    }
+  </style>
 </head>
 <body>
 
-<div id="main">
-  <h1>Weeklies</h1>
-  <div id="taskList"></div>
-  <button id="editBtn">Toggle Edit Menu</button>
-  <button id="resetBtn">Reset All</button>
+<div id="main" style="margin-left: 50px;">
+<h1 style="padding-right: 74px;">Weeklies</h1>  <div id="taskList"></div>
+<button id="editBtn" style="padding-right: 10px;margin-right: 74px;">Toggle Edit Menu</button>
+<button id="resetBtn" style="margin-right: 74px;">Reset All</button>
 
   <div id="editMenu">
     <h3>Edit Theme</h3>
@@ -29,9 +114,12 @@
 </div>
 
 <script>
-let tasks = [];
+let tasksRaw = [];
+let rows = [];
+let flatTasks = [];
 let state = [];
 let visibility = [];
+let rowVisibility = [];            // NEW: visibility per-row
 const presetFonts = ["Arial", "Verdana", "Tahoma", "Georgia", "Courier New", "Times New Roman"];
 
 // Default theme colors
@@ -50,10 +138,39 @@ const defaultTheme = {
 async function loadTasks() {
   const res = await fetch('tasks.json');
   const data = await res.json();
-  tasks = data.tasks;
+  tasksRaw = data.tasks || [];
 
-  state = JSON.parse(localStorage.getItem('state')) || tasks.map(() => false);
-  visibility = JSON.parse(localStorage.getItem('visibility')) || tasks.map(() => true);
+  // Normalize into rows: items that are arrays become rows, single objects become single-item rows
+  rows = tasksRaw.map(t => Array.isArray(t) ? t : [t]);
+  flatTasks = rows.flat();
+
+  // normalize persisted state/visibility to match current tasks count
+  const savedState = JSON.parse(localStorage.getItem('state')) || [];
+  const savedVis = JSON.parse(localStorage.getItem('visibility')) || [];
+  state = flatTasks.map((_, i) => (i < savedState.length ? !!savedState[i] : false));
+  visibility = flatTasks.map((_, i) => (i < savedVis.length ? !!savedVis[i] : true));
+  // persist normalized arrays so future loads are consistent
+  localStorage.setItem('state', JSON.stringify(state));
+  localStorage.setItem('visibility', JSON.stringify(visibility));
+
+  // NEW: load or normalize row-level visibility
+  const savedRowVis = JSON.parse(localStorage.getItem('rowVisibility')) || null;
+  if (Array.isArray(savedRowVis)) {
+    // use saved row-level visibility (normalize length)
+    rowVisibility = rows.map((_, i) => (i < savedRowVis.length ? !!savedRowVis[i] : true));
+  } else {
+    // derive row visibility from per-item visibility if no rowVisibility stored
+    let idx = 0;
+    rowVisibility = rows.map(rowTasks => {
+      const anyVisible = rowTasks.some(() => {
+        const v = (idx < visibility.length) ? visibility[idx] : true;
+        idx++;
+        return v;
+      });
+      return anyVisible;
+    });
+  }
+  localStorage.setItem('rowVisibility', JSON.stringify(rowVisibility));
 
   renderTasks();
 }
@@ -139,46 +256,86 @@ Object.keys(colorInputs).forEach(id => {
 function save() {
   localStorage.setItem('state', JSON.stringify(state));
   localStorage.setItem('visibility', JSON.stringify(visibility));
+  localStorage.setItem('rowVisibility', JSON.stringify(rowVisibility)); // persist row visibility too
 }
 
 function renderTasks() {
   taskList.innerHTML = '';
   const editOpen = editMenu.classList.contains('open');
+  let counter = 0; // index into flatTasks/state/visibility
 
-  tasks.forEach((t, i) => {
+  rows.forEach((rowTasks, rowIndex) => {
     const row = document.createElement('div');
     row.className = 'task-row';
+    let visibleInRow = 0;
 
-    const btn = document.createElement('button');
-    btn.className = 'toggle' + (state[i] ? ' active' : '');
-    btn.textContent = t.label || t.name || 'Task';
-    btn.style.fontSize = `var(--btn-text-size)`;
-    btn.style.fontFamily = `var(--font-family)`;
-    btn.onclick = () => {
-      state[i] = !state[i];
-      save();
+    rowTasks.forEach(t => {
+      const i = counter++;
+      const item = document.createElement('div');
+      item.className = 'task-item';
+
+      const btn = document.createElement('button');
+      btn.className = 'toggle' + (state[i] ? ' active' : '');
+      btn.textContent = t.label || t.name || 'Task';
+      btn.style.fontSize = `var(--btn-text-size)`;
+      btn.style.fontFamily = `var(--font-family)`;
+      btn.onclick = () => {
+        state[i] = !state[i];
+        save();
+        renderTasks();
+      };
+
+      // Visibility now considers both per-item visibility and the row-level visibility
+      const rowVisible = rowVisibility[rowIndex];
+      const itemVisible = !!visibility[i];
+      if (!itemVisible || !rowVisible) {
+        if (editOpen) {
+          btn.style.opacity = '0.3';
+        } else {
+          item.style.display = 'none';
+        }
+      } else {
+        btn.style.opacity = '1';
+        visibleInRow++;
+      }
+
+      item.appendChild(btn);
+      row.appendChild(item);
+    });
+
+    // Create a single row-level show/hide control (hides/shows the whole line)
+    const rowCtrl = document.createElement('div');
+    rowCtrl.className = 'row-control';
+    const rowBtn = document.createElement('button');
+    rowBtn.textContent = rowVisibility[rowIndex] ? 'Hide' : 'Show';
+    rowBtn.dataset.hidden = (!rowVisibility[rowIndex]).toString(); // reflect state for CSS
+    rowBtn.style.display = editOpen ? 'block' : 'none';
+    rowBtn.onclick = () => {
+      // toggle row visibility and also update per-item visibility for that row so behavior is consistent
+      rowVisibility[rowIndex] = !rowVisibility[rowIndex];
+
+      // compute start index for this row in flatTasks
+      let startIndex = 0;
+      for (let r = 0; r < rowIndex; r++) startIndex += rows[r].length;
+
+      for (let j = 0; j < rows[rowIndex].length; j++) {
+        const idx = startIndex + j;
+        // set per-item visibility to match the row-level choice
+        visibility[idx] = rowVisibility[rowIndex];
+      }
+
+      save(); // now also persists rowVisibility
       renderTasks();
     };
+    rowCtrl.appendChild(rowBtn);
+    row.appendChild(rowCtrl);
 
-    if(editOpen && !visibility[i]) btn.style.opacity = '0.3';
-    else if(!editOpen && !visibility[i]) row.style.display = 'none';
-    else {
-      btn.style.opacity = '1';
+    // If row has no visible items and we're not in edit mode, hide the whole row
+    if (!editOpen && (visibleInRow === 0 || !rowVisibility[rowIndex])) {
+      row.style.display = 'none';
+    } else {
       row.style.display = 'flex';
     }
-
-    row.appendChild(btn);
-
-    const showHide = document.createElement('button');
-    showHide.className = 'showhide';
-    showHide.textContent = visibility[i] ? 'Hide' : 'Show';
-    showHide.style.display = editOpen ? 'block' : 'none';
-    showHide.onclick = () => {
-      visibility[i] = !visibility[i];
-      save();
-      renderTasks();
-    };
-    row.appendChild(showHide);
 
     taskList.appendChild(row);
   });
@@ -190,7 +347,8 @@ editBtn.onclick = () => {
 };
 
 resetBtn.onclick = () => {
-  state = state.map(() => false);
+  // reset to false for all flat tasks
+  state = flatTasks.map(() => false);
   save();
   renderTasks();
 };
