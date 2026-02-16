@@ -8,18 +8,28 @@
     { "id": "task6",  "name": "Archon Hunt",         "label": "Archon Hunt" },
     { "id": "task7",  "name": "Ayatan Hunt",         "label": "Ayatan Hunt" },
     { "id": "task8",  "name": "Help Clem",           "label": "Help Clem" },
+    
    [
     { "id": "task9",  "name": "EDA",                 "label": "EDA" },
     { "id": "task10", "name": "ETA",                 "label": "ETA" } ],
+
+    
     { "id": "task11", "name": "Netracell",           "label": "Netracell" },
     { "id": "task12", "name": "Nightwave",           "label": "Nightwave" },
     { "id": "task13", "name": "1999 Calendar",       "label": "1999 Calendar" },
     { "id": "task14", "name": "Circuit",             "label": "Circuit" },
+      [
     { "id": "task18", "name": "Decendia",            "label": "Decendia" },
+    { "id": "task19", "name": "Decendia",            "label": "SP" }],
+
+    
    [
     { "id": "task15",  "name": "Invigoration1",                 "label": "Invig 1" },
     { "id": "task16",  "name": "Invigoration2",                 "label": "Invig 2" },
     { "id": "task17",  "name": "Invigoration3",                 "label": "Invig 3" } ]
+
+    
   ]
 }
+
 
