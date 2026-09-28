@@ -62,6 +62,8 @@
     let rowVisibility = [];   // per-row visibility
     let firstRender = true;   // entrance animation plays once
     let justDone = -1;        // task just completed by a click
+    let openInfo = -1;        // task whose info popover is open (flat index)
+    let refocus = -1;         // info button to re-focus after a re-render
 
     const $ = id => document.getElementById(id);
     const taskList = $('taskList');
@@ -274,6 +276,7 @@
       taskList.innerHTML = '';
       const editOpen = editMenu.classList.contains('open');
       taskList.classList.toggle('editing', editOpen);
+      let toFocus = null;
       let counter = 0;
       let total = 0;
       let done = 0;
@@ -284,6 +287,7 @@
         row.className = 'task-row';
         if (firstRender) { row.classList.add('enter'); row.style.setProperty('--i', rowIndex); }
         let visibleInRow = 0;
+        let pop = null;
 
         rowTasks.forEach(t => {
           const i = counter++;
@@ -299,6 +303,7 @@
           label.textContent = t.label || t.name || 'Task';
           btn.appendChild(label);
           btn.onclick = () => {
+            openInfo = -1;
             state[i] = !state[i];
             justDone = state[i] ? i : -1;
             save();
@@ -317,8 +322,40 @@
           }
 
           item.appendChild(btn);
+
+          // optional "i" button: shows the task's "info" text from tasks.json
+          const infoText = Array.isArray(t.info) ? t.info.join('\n') : t.info;
+          if (infoText) {
+            btn.classList.add('has-info');
+            const label = t.label || t.name || 'task';
+            const ib = document.createElement('button');
+            ib.type = 'button';
+            ib.className = 'info-btn';
+            ib.textContent = 'i';
+            ib.setAttribute('aria-label', 'About ' + label);
+            ib.setAttribute('aria-expanded', String(i === openInfo));
+            ib.onclick = e => {
+              e.stopPropagation();
+              openInfo = openInfo === i ? -1 : i;
+              refocus = i;
+              renderTasks();
+            };
+            item.appendChild(ib);
+            if (i === refocus) toFocus = ib;
+            if (i === openInfo && (shown || editOpen)) {
+              pop = document.createElement('div');
+              pop.className = 'info-pop';
+              pop.setAttribute('role', 'note');
+              const head = document.createElement('strong');
+              head.textContent = label;
+              pop.appendChild(head);
+              pop.appendChild(document.createTextNode(infoText));
+            }
+          }
           row.appendChild(item);
         });
+
+        if (pop) { row.classList.add('info-open'); row.appendChild(pop); }
 
         // row-level Hide/Show (only shown while the edit menu is open)
         const rowCtrl = document.createElement('div');
@@ -349,6 +386,8 @@
       $('progressBar').style.width = total ? `${(done / total) * 100}%` : '0';
       justDone = -1;
       firstRender = false;
+      refocus = -1;
+      if (toFocus) toFocus.focus();
     }
 
     editBtn.onclick = () => {
@@ -362,6 +401,16 @@
       save();
       renderTasks();
     };
+
+    // click anywhere else (or press Escape) to close an open info popover
+    document.addEventListener('click', e => {
+      if (openInfo === -1 || e.target.closest('.info-btn, .info-pop')) return;
+      openInfo = -1;
+      renderTasks();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && openInfo !== -1) { openInfo = -1; renderTasks(); }
+    });
 
     loadTasks();
   </script>

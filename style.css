@@ -102,7 +102,49 @@ h1 {
 /* --cols is set per row in JS: one equal column per visible button */
 .task-row { position: relative; display: grid; gap: var(--gap); grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)); }
 
-.task-item { min-width: 0; display: flex; }
+.task-item { position: relative; min-width: 0; display: flex; }
+
+/* info ("i") button sits inside the task button, on the right */
+.toggle.has-info { padding-right: 2.6em; }
+.info-btn {
+  position: absolute;
+  top: 50%;
+  right: 0.55em;
+  transform: translateY(-50%);
+  width: 1.7em;
+  height: 1.7em;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: var(--fg);
+  font: italic 600 0.85em Georgia, "Times New Roman", serif;
+  line-height: 1;
+  background: color-mix(in srgb, var(--fg) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fg) 35%, transparent);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.info-btn:hover, .info-btn[aria-expanded="true"] { background: color-mix(in srgb, var(--fg) 24%, transparent); }
+
+.task-row.info-open { z-index: 20; }
+.info-pop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-line;
+  background: var(--edit-menu-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  animation: drop 0.15s ease-out;
+}
+.info-pop strong { display: block; margin-bottom: 4px; }
 
 .toggle {
   flex: 1;
