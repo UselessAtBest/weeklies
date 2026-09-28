@@ -74,6 +74,24 @@
     const textSizePicker = $('textSizePicker');
     const textSizeValue = $('textSizeValue');
 
+    // turns "[text](https://url)" and bare http(s) URLs into links; everything else stays plain text.
+    // Built with DOM nodes (no innerHTML) and limited to http/https, so tasks.json can't inject scripts.
+    function appendLinked(el, text) {
+      const re = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<]*[^\s<.,;:!?)\]])/g;
+      let last = 0, m;
+      while ((m = re.exec(text))) {
+        if (m.index > last) el.appendChild(document.createTextNode(text.slice(last, m.index)));
+        const a = document.createElement('a');
+        a.href = m[2] || m[3];
+        a.textContent = m[1] || m[3];
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        el.appendChild(a);
+        last = re.lastIndex;
+      }
+      if (last < text.length) el.appendChild(document.createTextNode(text.slice(last)));
+    }
+
     const readJSON = (key, fallback) => {
       try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
       catch { return fallback; }
@@ -349,7 +367,7 @@
               const head = document.createElement('strong');
               head.textContent = label;
               pop.appendChild(head);
-              pop.appendChild(document.createTextNode(infoText));
+              appendLinked(pop, infoText);
             }
           }
           row.appendChild(item);

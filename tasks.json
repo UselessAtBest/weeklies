@@ -1,32 +1,32 @@
 {
   "tasks": [
-    { "id": "task1",  "name": "Acrithis Shop",       "label": "Acrithis Shop", "info": ["Visit Acrithis in duviri or the zariman and see what she has to offer."] },
-    { "id": "task2",  "name": "Teshin - SP Honours", "label": "Teshin - SP Honours", "info": ["Visit Teshin in a relay for his weekly offerings."] },
-    { "id": "task3",  "name": "Iron Wake - Rivens - Other",  "label": "Iron Wake - Rivens", "info": ["Visit Palladino at Iron Wake on earth, for the weekly rivens, and other weekly items."] },
-    { "id": "task4",  "name": "Bird 3 - Shard",      "label": "Bird 3 - Shard", "info": ["Visit Bird 3 in the Sanctum Anatomica for the weekly archon shard."] },
-    { "id": "task5",  "name": "Yonta - Kuva",        "label": "Yonta - Kuva", "info": ["Visit Yonta in the Zariman for the weekly Kuva."] },
-    { "id": "task6",  "name": "Archon Hunt",         "label": "Archon Hunt", "info": ["Finish the Archon Hunt."] },
-    { "id": "task7",  "name": "Ayatan Hunt",         "label": "Ayatan Hunt", "info": ["Visit Maroo on Mars and complete her Ayatan Hunt."] },
-    { "id": "task8",  "name": "Help Clem",           "label": "Help Clem", "info": ["Visit Darvo in a relay, and help Clem out."] },
+    { "id": "task1",  "name": "Acrithis Shop",       "label": "Acrithis Shop", "info": ["Visit [Acrithis](https://wiki.warframe.com/w/Acrithis) in duviri or the zariman and see what she has to offer."] },
+    { "id": "task2",  "name": "Teshin - SP Honours", "label": "Teshin - SP Honours", "info": ["Visit [Teshin](https://wiki.warframe.com/w/Teshin) in a relay for his [weekly offerings](https://wiki.warframe.com/w/The_Steel_Path#Steel_Essence)."] },
+    { "id": "task3",  "name": "Iron Wake - Rivens - Other",  "label": "Iron Wake - Rivens", "info": ["Visit [Palladino](https://wiki.warframe.com/w/Palladino) at Iron Wake on earth, for the weekly rivens, and other weekly items."] },
+    { "id": "task4",  "name": "Bird 3 - Shard",      "label": "Bird 3 - Shard", "info": ["Visit [Bird 3](https://wiki.warframe.com/w/Bird_3) in the [Sanctum Anatomica](https://wiki.warframe.com/w/Sanctum_Anatomica) for the weekly archon shard."] },
+    { "id": "task5",  "name": "Yonta - Kuva",        "label": "Yonta - Kuva", "info": ["Visit [Yonta](https://wiki.warframe.com/w/Archimedean_Yonta) in the [Zariman](https://wiki.warframe.com/w/Zariman_Ten_Zero) for the weekly Kuva."] },
+    { "id": "task6",  "name": "Archon Hunt",         "label": "Archon Hunt", "info": ["Finish the [Archon Hunt](https://wiki.warframe.com/w/Archon_Hunt)."] },
+    { "id": "task7",  "name": "Ayatan Hunt",         "label": "Ayatan Hunt", "info": ["Visit [Maroo](https://wiki.warframe.com/w/Maroo) on Mars and complete her Ayatan Hunt."] },
+    { "id": "task8",  "name": "Help Clem",           "label": "Help Clem", "info": ["Visit [Darvo](https://wiki.warframe.com/w/Darvo) in a relay, and help [Clem](https://wiki.warframe.com/w/Clem) out."] },
     
    [
-    { "id": "task9",  "name": "EDA",                 "label": "EDA", "info": ["Finish Elite Deep Archimedia, visit necraloid in the Sanctum Anatomica. Rank 5 Required."] },
-    { "id": "task10", "name": "ETA",                 "label": "ETA", "info": ["Finish Elite Temporal Archimeadia, visit Kaya in the Höllvania mall. Rank 5 Required."] } ],
+    { "id": "task9",  "name": "EDA",                 "label": "EDA", "info": ["Finish Elite [Deep Archimedia](https://wiki.warframe.com/w/Deep_Archimedea#Elite_Archimedea), visit necraloid in the [Sanctum Anatomica](https://wiki.warframe.com/w/Sanctum_Anatomica). Rank 5 Required."] },
+    { "id": "task10", "name": "ETA",                 "label": "ETA", "info": ["Finish Elite [Temporal Archimeadia](https://wiki.warframe.com/w/Temporal_Archimedea), visit [Kaya](https://wiki.warframe.com/w/Kaya) in the Höllvania mall. Rank 5 Required."] } ],
 
     
-    { "id": "task11", "name": "Netracell",           "label": "Netracell", "info": ["Finsh all netracells in the Sanctum Anatomica."] },
-    { "id": "task12", "name": "Nightwave",           "label": "Nightwave", "info": ["Complete the weekly challenges for Nightwave."] },
-    { "id": "task13", "name": "1999 Calendar",       "label": "1999 Calendar", "info": ["Finish the weekly 1999 calendar challenges."] },
-    { "id": "task14", "name": "Circuit",             "label": "Circuit", "info": ["Finish the circuit in Duviri."] },
+    { "id": "task11", "name": "Netracell",           "label": "Netracell", "info": ["Finsh all [Netracells](https://wiki.warframe.com/w/Netracells) in the [Sanctum Anatomica](https://wiki.warframe.com/w/Sanctum_Anatomica)."] },
+    { "id": "task12", "name": "Nightwave",           "label": "Nightwave", "info": ["Complete the weekly challenges for [Nightwave](https://wiki.warframe.com/w/Nightwave)."] },
+    { "id": "task13", "name": "1999 Calendar",       "label": "1999 Calendar", "info": ["Finish the weekly [1999 calendar](https://wiki.warframe.com/w/1999_Calendar) challenges."] },
+    { "id": "task14", "name": "Circuit",             "label": "Circuit", "info": ["Finish The [Circuit](https://wiki.warframe.com/w/The_Circuit) in Duviri."] },
       [
-    { "id": "task18", "name": "Decendia",                       "label": "Decendia", "info": ["Clear all 21 floors of Decendia."] },
-    { "id": "task19", "name": "Decendia",                       "label": "SP", "info": ["Clear all 21 floors of Steel Path Decendia."] }],
+    { "id": "task18", "name": "Decendia",                       "label": "Decendia", "info": ["Clear all 21 floors of [Decendia](https://wiki.warframe.com/w/The_Descendia)."] },
+    { "id": "task19", "name": "Decendia",                       "label": "SP", "info": ["Clear all 21 floors of Steel Path [Decendia](https://wiki.warframe.com/w/The_Descendia)."] }],
 
     
    [
     { "id": "task15",  "name": "Invigoration1",                 "label": "Invig 1" },
     { "id": "task16",  "name": "Invigoration2",                 "label": "Invig 2" },
-    { "id": "task17",  "name": "Invigoration3",                 "label": "Invig 3","info": ["Invigorate your warframe in the helminth."] } ]
+    { "id": "task17",  "name": "Invigoration3",                 "label": "Invig 3","info": ["[Invigorate](https://wiki.warframe.com/w/Helminth#Invigoration) your warframe in the [helminth](https://wiki.warframe.com/w/Helminth)."] } ]
 
     
   ]

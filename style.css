@@ -145,6 +145,8 @@ h1 {
   animation: drop 0.15s ease-out;
 }
 .info-pop strong { display: block; margin-bottom: 4px; }
+.info-pop a { color: color-mix(in srgb, var(--fg) 55%, #4cc9f0); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
+.info-pop a:hover { text-decoration-thickness: 2px; }
 
 .toggle {
   flex: 1;
