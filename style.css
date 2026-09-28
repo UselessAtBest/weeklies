@@ -1,154 +1,289 @@
+/* Weeklies — theme variables are set/overridden from JS (see index.html) */
 :root {
-  --bg: #1a1a1a;
-  --fg: #e6e6e6;
-  --btn-bg: #333;
-  --btn-active: #4caf50;
-  --edit-btn: #444;
-  --reset-btn: #444;
-  --transition: 0.3s;
-  --text-size: 16px;
-  --font-family: Arial, sans-serif;
+  --bg: #0f1419;
+  --fg: #e7ecf2;
+  --btn-bg: #18212b;
+  --btn-active: #2b7a68;
+  --edit-btn: #243040;
+  --reset-btn: #4a2a30;
+  --edit-menu-bg: #151d26;
+  --btn-text-size: 16px;
+  --font-family: system-ui;
+
+  --gap: 10px;
+  --radius: 12px;
+  --line: color-mix(in srgb, var(--fg) 12%, transparent);
+  --muted: color-mix(in srgb, var(--fg) 60%, transparent);
 }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { color-scheme: dark; }
 
 body {
   margin: 0;
-  font-family: var(--font-family);
-  font-size: var(--text-size);
+  min-height: 100vh;
   background: var(--bg);
   color: var(--fg);
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  height: 100vh;
-  transition: background var(--transition), color var(--transition), font-size var(--transition), font-family var(--transition);
+  font-family: var(--font-family), system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: var(--btn-text-size);
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
 }
 
 #main {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 20px 64px;
+}
+
+/* ---------- header ---------- */
+.page-head {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: var(--text-size);
-  font-family: var(--font-family);
-  position: relative; /* anchor for edit menu */
-}
-
-#editMenu {
-  position: absolute;
-  right: 110%; /* appear to the left of #main */
-  top: 8%;
-  width: 260px;
-  background: #222;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-  display: none;
-  opacity: 0;
-  transform: translateX(-15px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
-  font-size: var(--text-size);
-  font-family: var(--font-family);
-  z-index: 10;
-}
-
-#editMenu.open {
-  display: block;
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.task-row {
-  width: 100%;
-  max-width: 500px;
-  display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 10px;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
-button.toggle {
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  background: var(--btn-bg);
-  cursor: pointer;
-  transition: background var(--transition), transform 0.2s ease, font-size var(--transition), font-family var(--transition);
-  flex: 1;
-  margin-right: 10px;
+.title-group { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+
+.reset-timer { position: relative; color: var(--muted); font-size: 0.9rem; white-space: nowrap; }
+.reset-timer::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 5;
+  padding: 6px 10px;
   color: var(--fg);
-  font-size: var(--text-size);
-  font-family: var(--font-family);
+  font-size: 0.8rem;
+  background: var(--edit-menu-bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.reset-timer[data-tip]:hover::after, .reset-timer[data-tip]:focus-visible::after { opacity: 1; }
+.reset-timer time { color: var(--fg); font-variant-numeric: tabular-nums; font-weight: 600; }
+
+h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-button.toggle.active {
+#progress { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.bar {
+  height: 4px;
+  margin-bottom: 24px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.bar > span {
+  display: block;
+  height: 100%;
+  width: 0;
   background: var(--btn-active);
-  color: #fff;
-  transform: scale(1.03);
+  transition: width 0.3s ease;
 }
 
-.showhide {
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
-  background: #555;
-  cursor: pointer;
+/* ---------- task list ---------- */
+/* One shared column, as wide as the widest row needs (in em, so it follows the Text Size slider);
+   every row stretches to that width and its buttons split it equally. */
+#taskList { display: grid; grid-template-columns: fit-content(100%); justify-content: center; gap: var(--gap); }
+
+/* --cols is set per row in JS: one equal column per visible button */
+.task-row { position: relative; display: grid; gap: var(--gap); grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)); }
+
+.task-item { min-width: 0; display: flex; }
+
+.toggle {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.8em;
+  padding: 0.6em 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  text-align: left;
+  font: inherit;
+  font-size: var(--btn-text-size);
   color: var(--fg);
+  background: var(--btn-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+.toggle:hover { border-color: color-mix(in srgb, var(--fg) 28%, transparent); }
+.toggle:hover:not(:active) { transform: translateY(-1px); }
+.toggle:active { transform: scale(0.985); }
+
+/* checkbox-style marker */
+.toggle::before {
+  content: "";
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+  border: 2px solid var(--muted);
+  border-radius: 50%;
+  transition: all 0.15s ease;
+}
+.toggle .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.toggle.active {
+  background: var(--btn-active);
+  border-color: transparent;
+}
+.toggle.active::before {
+  border-color: var(--fg);
+  background:
+    no-repeat center / 70% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+    color-mix(in srgb, var(--fg) 22%, transparent);
+}
+.toggle.active .label { opacity: 0.85; }
+
+.toggle.dimmed { opacity: 0.35; }
+
+/* row-level hide/show, only visible while editing */
+/* Hide/Show sits just to the right of its row without moving the centered buttons */
+.row-control { position: absolute; top: 0; bottom: 0; left: calc(100% + var(--gap)); display: flex; }
+.row-control button {
+  flex: 1;
+  font: inherit;
+  font-size: 0.85rem;
+}
+.row-control button[data-hidden="true"] { opacity: 0.6; }
+
+/* ---------- buttons ---------- */
+.actions { display: flex; flex-wrap: wrap; gap: var(--gap); margin-top: 28px; }
+
+#editBtn, #resetBtn, .row-control button {
+  padding: 9px 16px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+#editBtn, .row-control button { background: var(--edit-btn); }
+#resetBtn { background: var(--reset-btn); }
+#editBtn:hover, #resetBtn:hover, .row-control button:hover { filter: brightness(1.15); }
+#editBtn[aria-expanded="true"] { border-color: var(--fg); }
+
+/* ---------- edit menu ---------- */
+#editMenu {
   display: none;
-  transition: opacity 0.25s ease, font-size var(--transition), font-family var(--transition);
-  font-size: var(--text-size);
-  font-family: var(--font-family);
+  margin-top: 16px;
+  padding: 20px;
+  background: var(--edit-menu-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
 }
+#editMenu.open { display: block; }
 
-#editBtn, #resetBtn {
-  margin-top: 20px;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
+#editMenu h3 { margin: 0; font-size: 1rem; }
+.menu-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+#resetThemeBtn {
+  padding: 6px 12px;
   color: var(--fg);
-  transition: background var(--transition), transform 0.2s ease, font-size var(--transition), font-family var(--transition);
-  font-size: var(--text-size);
-  font-family: var(--font-family);
-}
-
-#editBtn:hover, #resetBtn:hover {
-  transform: scale(1.05);
-}
-
-#editBtn {
+  font-family: inherit;
+  font-size: 0.85rem;
   background: var(--edit-btn);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
 }
+#resetThemeBtn:hover { filter: brightness(1.15); }
 
-#resetBtn {
-  background: var(--reset-btn);
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px 24px;
 }
 
 .color-picker {
-  margin-top: 10px;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: var(--text-size);
-  font-family: var(--font-family);
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.9rem;
 }
+.color-picker.wide { grid-column: 1 / -1; }
 
-/* Modern color pickers */
-#editMenu input[type="color"] {
-  -webkit-appearance: none;
-  border: none;
+.color-picker input[type="color"] {
   width: 40px;
   height: 28px;
-  border-radius: 6px;
-  cursor: pointer;
   padding: 0;
   background: none;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-#editMenu input[type="color"]:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-}
-#editMenu input[type="color"]::-moz-color-swatch {
-  border: none;
+  border: 1px solid var(--line);
   border-radius: 6px;
+  cursor: pointer;
+}
+.color-picker input[type="range"] { flex: 1; max-width: 220px; accent-color: var(--btn-active); }
+.color-picker select {
+  padding: 6px 8px;
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.9rem;
+  background: var(--btn-bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.range-wrap { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; }
+#textSizeValue { min-width: 3.5ch; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* ---------- misc ---------- */
+.error { color: #ff9b9b; }
+
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+/* on narrow screens there's no room to hang it outside, so it joins the row as a last column */
+@media (max-width: 720px) {
+  .editing .task-row { grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)) auto; }
+  .row-control { position: static; }
+}
+
+@media (max-width: 480px) {
+  #main { padding: 24px 14px 48px; }
+  h1 { font-size: 1.6rem; }
+}
+
+/* ---------- background ---------- */
+#bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+#bg i {
+  position: absolute;
+  width: 60vmax; height: 60vmax;
+  border-radius: 50%;
+  opacity: 0.3;
+  will-change: transform;
+  animation: drift 24s ease-in-out infinite alternate;
+}
+/* soft radial gradients look like blurred blobs but are far cheaper than filter: blur() */
+#bg i:nth-child(1) { background: radial-gradient(closest-side, var(--btn-active), transparent); top: -20vmax; left: -15vmax; }
+#bg i:nth-child(2) { background: radial-gradient(closest-side, #4cc9f0, transparent); bottom: -25vmax; right: -15vmax; animation-duration: 30s; animation-delay: -8s; }
+#bg i:nth-child(3) { background: radial-gradient(closest-side, #b56cff, transparent); top: 25%; left: 35%; width: 44vmax; height: 44vmax; opacity: 0.2; animation-duration: 36s; }
+@keyframes drift { to { transform: translate(10vmax, 6vmax) scale(1.15); } }
+
+/* ---------- motion (kept light) ---------- */
+.task-row.enter { animation: rise 0.4s ease-out both; animation-delay: calc(var(--i, 0) * 30ms); }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.toggle.pop { animation: pop 0.3s ease-out; }
+@keyframes pop { 50% { transform: scale(1.03); } }
+
+#editMenu.open { animation: drop 0.2s ease-out; }
+@keyframes drop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
 }

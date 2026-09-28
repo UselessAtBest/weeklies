@@ -3,360 +3,367 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
   <title>Warframe Weeklies Checklist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@400;600&family=Orbitron:wght@400;700&family=Pacifico&family=Press+Start+2P&family=Rajdhani:wght@400;600&display=swap">
   <link rel="stylesheet" href="style.css">
-
-  <!-- Added CSS: equal-width buttons per row and small padding between them -->
-  <style>
-    :root{
-      --btn-gap: 8px;
-      --showhide-width: 56px;
-      --btn-padding-vertical: 8px;
-      --btn-padding-horizontal: 12px;
-    }
-
-    /* row container */
-    .task-row {
-      display: flex;
-      gap: var(--btn-gap);
-      margin-bottom: 8px;
-      align-items: stretch;
-    }
-
-    /* each task cell becomes a flex item that shares available width equally */
-    .task-item {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      flex: 1 1 0;
-      min-width: 0; /* allow children to shrink properly */
-    }
-
-    /* main button takes remaining space inside the item */
-    .task-item .toggle {
-      flex: 1 1 0;
-      width: 100%;
-      padding: var(--btn-padding-vertical) var(--btn-padding-horizontal);
-      box-sizing: border-box;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* small show/hide button kept for compatibility (per-item) */
-    .task-item .showhide {
-      flex: 0 0 var(--showhide-width);
-      width: var(--showhide-width);
-      padding: 6px;
-      box-sizing: border-box;
-    }
-
-    /* row-level control: fixed-size control at end of row that hides/shows the whole line */
-    .row-control {
-      flex: 0 0 var(--showhide-width);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: var(--showhide-width);
-      box-sizing: border-box;
-    }
-    .row-control button { padding:6px; }
-
-    /* Use the same styling the edit button used previously for consistency */
-    /* (these rely on theme vars set by the edit menu: --edit-btn, --reset-btn, --fg, --btn-text-size, --font-family) */
-    #editBtn, #resetBtn, .row-control button {
-      background: var(--edit-btn);
-      color: var(--fg);
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      padding: 6px 10px;
-      box-sizing: border-box;
-      font-size: calc(var(--btn-text-size) - 2px);
-      font-family: var(--font-family);
-    }
-
-    /* reset button uses its own accent */
-    #resetBtn {
-      background: var(--reset-btn);
-    }
-
-    /* small hover / active affordances */
-    #editBtn:hover, .row-control button:hover, #resetBtn:hover {
-      filter: brightness(1.06);
-    }
-
-    /* active state for row-control can indicate hidden/shown */
-    .row-control button[data-hidden="true"] {
-      opacity: 0.6;
-    }
-  </style>
 </head>
 <body>
+  <div id="bg" aria-hidden="true"><i></i><i></i><i></i></div>
+  <main id="main">
+    <header class="page-head">
+      <div class="title-group">
+        <h1>Weeklies</h1>
+        <span id="resetTimer" class="reset-timer" tabindex="0">Weekly reset in: <time id="resetCountdown">--</time></span>
+      </div>
+      <span id="progress" aria-live="polite"></span>
+    </header>
+    <div class="bar" aria-hidden="true"><span id="progressBar"></span></div>
 
-<div id="main" style="margin-left: 50px;">
-<h1 style="padding-right: 74px;">Weeklies</h1>  <div id="taskList"></div>
-<button id="editBtn" style="padding-right: 10px;margin-right: 74px;">Toggle Edit Menu</button>
-<button id="resetBtn" style="margin-right: 74px;">Reset All</button>
+    <div id="taskList"></div>
 
-  <div id="editMenu">
-    <h3>Edit Theme</h3>
-    <div class="color-picker"><label>Page Background</label><input type="color" id="bgPicker"></div>
-    <div class="color-picker"><label>Text</label><input type="color" id="textPicker"></div>
-    <div class="color-picker"><label>Uncompleted</label><input type="color" id="btnOffPicker"></div>
-    <div class="color-picker"><label>Compelted</label><input type="color" id="btnOnPicker"></div>
-    <div class="color-picker"><label>Edit Button</label><input type="color" id="editBtnPicker"></div>
-    <div class="color-picker"><label>Reset Button</label><input type="color" id="resetBtnPicker"></div>
-    <div class="color-picker"><label>Edit Menu Background</label><input type="color" id="editMenuBgPicker"></div>
-    <div class="color-picker"><label>Text Size </label><input type="range" id="textSizePicker" min="8" max="48" value="16"> <span id="textSizeValue">16</span> px</div>
-    <div class="color-picker"><label>Font</label><select id="fontPicker"></select></div>
-  </div>
-</div>
+    <div class="actions">
+      <button id="editBtn" type="button" aria-expanded="false" aria-controls="editMenu">Toggle Edit Menu</button>
+      <button id="resetBtn" type="button">Reset All</button>
+    </div>
 
-<script>
-let tasksRaw = [];
-let rows = [];
-let flatTasks = [];
-let state = [];
-let visibility = [];
-let rowVisibility = [];            // NEW: visibility per-row
-const presetFonts = ["Arial", "Verdana", "Tahoma", "Georgia", "Courier New", "Times New Roman"];
+    <section id="editMenu" aria-label="Theme settings">
+      <div class="menu-head">
+        <h3>Edit Theme</h3>
+        <button id="resetThemeBtn" type="button">Reset Theme</button>
+      </div>
+      <div class="theme-grid">
+        <div class="color-picker"><label for="bgPicker">Page Background</label><input type="color" id="bgPicker"></div>
+        <div class="color-picker"><label for="textPicker">Text</label><input type="color" id="textPicker"></div>
+        <div class="color-picker"><label for="btnOffPicker">Uncompleted</label><input type="color" id="btnOffPicker"></div>
+        <div class="color-picker"><label for="btnOnPicker">Completed</label><input type="color" id="btnOnPicker"></div>
+        <div class="color-picker"><label for="editBtnPicker">Edit Button</label><input type="color" id="editBtnPicker"></div>
+        <div class="color-picker"><label for="resetBtnPicker">Reset Button</label><input type="color" id="resetBtnPicker"></div>
+        <div class="color-picker"><label for="editMenuBgPicker">Edit Menu Background</label><input type="color" id="editMenuBgPicker"></div>
+        <div class="color-picker"><label for="fontPicker">Font</label><select id="fontPicker"></select></div>
+        <div class="color-picker wide">
+          <label for="textSizePicker">Text Size</label>
+          <div class="range-wrap">
+            <input type="range" id="textSizePicker" min="8" max="48" value="16">
+            <span id="textSizeValue">16 px</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-// Default theme colors
-const defaultTheme = {
-  '--bg': '#1a1a1a',
-  '--fg': '#e6e6e6',
-  '--btn-bg': '#333',
-  '--btn-active': '#4caf50',
-  '--edit-btn': '#444',
-  '--reset-btn': '#444',
-  '--edit-menu-bg': '#222',
-  '--btn-text-size': '16',
-  '--font-family': 'Arial'
-};
+    <script>
+    // ---------- state ----------
+    let rows = [];            // array of arrays of task objects
+    let state = [];           // completed flag per task (flat index)
+    let visibility = [];      // per-task visibility (flat index)
+    let rowVisibility = [];   // per-row visibility
+    let firstRender = true;   // entrance animation plays once
+    let justDone = -1;        // task just completed by a click
 
-async function loadTasks() {
-  const res = await fetch('tasks.json');
-  const data = await res.json();
-  tasksRaw = data.tasks || [];
+    const $ = id => document.getElementById(id);
+    const taskList = $('taskList');
+    const editMenu = $('editMenu');
+    const editBtn = $('editBtn');
+    const resetBtn = $('resetBtn');
+    const fontPicker = $('fontPicker');
+    const textSizePicker = $('textSizePicker');
+    const textSizeValue = $('textSizeValue');
 
-  // Normalize into rows: items that are arrays become rows, single objects become single-item rows
-  rows = tasksRaw.map(t => Array.isArray(t) ? t : [t]);
-  flatTasks = rows.flat();
-
-  // normalize persisted state/visibility to match current tasks count
-  const savedState = JSON.parse(localStorage.getItem('state')) || [];
-  const savedVis = JSON.parse(localStorage.getItem('visibility')) || [];
-  state = flatTasks.map((_, i) => (i < savedState.length ? !!savedState[i] : false));
-  visibility = flatTasks.map((_, i) => (i < savedVis.length ? !!savedVis[i] : true));
-  // persist normalized arrays so future loads are consistent
-  localStorage.setItem('state', JSON.stringify(state));
-  localStorage.setItem('visibility', JSON.stringify(visibility));
-
-  // NEW: load or normalize row-level visibility
-  const savedRowVis = JSON.parse(localStorage.getItem('rowVisibility')) || null;
-  if (Array.isArray(savedRowVis)) {
-    // use saved row-level visibility (normalize length)
-    rowVisibility = rows.map((_, i) => (i < savedRowVis.length ? !!savedRowVis[i] : true));
-  } else {
-    // derive row visibility from per-item visibility if no rowVisibility stored
-    let idx = 0;
-    rowVisibility = rows.map(rowTasks => {
-      const anyVisible = rowTasks.some(() => {
-        const v = (idx < visibility.length) ? visibility[idx] : true;
-        idx++;
-        return v;
-      });
-      return anyVisible;
-    });
-  }
-  localStorage.setItem('rowVisibility', JSON.stringify(rowVisibility));
-
-  renderTasks();
-}
-
-const taskList = document.getElementById('taskList');
-const editMenu = document.getElementById('editMenu');
-const editBtn = document.getElementById('editBtn');
-const resetBtn = document.getElementById('resetBtn');
-const fontPicker = document.getElementById('fontPicker');
-const textSizePicker = document.getElementById('textSizePicker');
-const textSizeValue = document.getElementById('textSizeValue');
-const editMenuBgPicker = document.getElementById('editMenuBgPicker');
-
-presetFonts.forEach(f => {
-  const option = document.createElement('option');
-  option.value = f;
-  option.textContent = f;
-  fontPicker.appendChild(option);
-});
-
-const colorInputs = {
-  bgPicker: '--bg',
-  textPicker: '--fg',
-  btnOffPicker: '--btn-bg',
-  btnOnPicker: '--btn-active',
-  editBtnPicker: '--edit-btn',
-  resetBtnPicker: '--reset-btn',
-  editMenuBgPicker: '--edit-menu-bg',
-  textSizePicker: '--btn-text-size',
-  fontPicker: '--font-family'
-};
-
-// Initialize theme with saved values or defaults
-Object.keys(colorInputs).forEach(id => {
-  const varName = colorInputs[id];
-  let saved = localStorage.getItem(varName);
-  if (!saved) saved = defaultTheme[varName];
-
-  if(id === 'textSizePicker') {
-    document.documentElement.style.setProperty(varName, saved + 'px');
-    textSizePicker.value = saved;
-    textSizeValue.textContent = saved;
-  } else if(id === 'fontPicker') {
-    document.documentElement.style.setProperty(varName, saved);
-    fontPicker.value = saved;
-  } else {
-    document.documentElement.style.setProperty(varName, saved);
-    if(id === 'editMenuBgPicker') editMenu.style.background = saved;
-  }
-});
-
-textSizePicker.addEventListener('input', e => {
-  const val = e.target.value;
-  document.documentElement.style.setProperty('--btn-text-size', val + 'px');
-  textSizeValue.textContent = val;
-  localStorage.setItem('--btn-text-size', val);
-});
-
-fontPicker.addEventListener('change', e => {
-  const val = e.target.value;
-  document.documentElement.style.setProperty('--font-family', val);
-  localStorage.setItem('--font-family', val);
-});
-
-editMenuBgPicker.addEventListener('input', e => {
-  const val = e.target.value;
-  document.documentElement.style.setProperty('--edit-menu-bg', val);
-  editMenu.style.background = val;
-  localStorage.setItem('--edit-menu-bg', val);
-});
-
-Object.keys(colorInputs).forEach(id => {
-  if(!['textSizePicker','fontPicker','editMenuBgPicker'].includes(id)) {
-    const el = document.getElementById(id);
-    el.addEventListener('input', e => {
-      const val = e.target.value;
-      document.documentElement.style.setProperty(colorInputs[id], val);
-      localStorage.setItem(colorInputs[id], val);
-    });
-  }
-});
-
-function save() {
-  localStorage.setItem('state', JSON.stringify(state));
-  localStorage.setItem('visibility', JSON.stringify(visibility));
-  localStorage.setItem('rowVisibility', JSON.stringify(rowVisibility)); // persist row visibility too
-}
-
-function renderTasks() {
-  taskList.innerHTML = '';
-  const editOpen = editMenu.classList.contains('open');
-  let counter = 0; // index into flatTasks/state/visibility
-
-  rows.forEach((rowTasks, rowIndex) => {
-    const row = document.createElement('div');
-    row.className = 'task-row';
-    let visibleInRow = 0;
-
-    rowTasks.forEach(t => {
-      const i = counter++;
-      const item = document.createElement('div');
-      item.className = 'task-item';
-
-      const btn = document.createElement('button');
-      btn.className = 'toggle' + (state[i] ? ' active' : '');
-      btn.textContent = t.label || t.name || 'Task';
-      btn.style.fontSize = `var(--btn-text-size)`;
-      btn.style.fontFamily = `var(--font-family)`;
-      btn.onclick = () => {
-        state[i] = !state[i];
-        save();
-        renderTasks();
-      };
-
-      // Visibility now considers both per-item visibility and the row-level visibility
-      const rowVisible = rowVisibility[rowIndex];
-      const itemVisible = !!visibility[i];
-      if (!itemVisible || !rowVisible) {
-        if (editOpen) {
-          btn.style.opacity = '0.3';
-        } else {
-          item.style.display = 'none';
-        }
-      } else {
-        btn.style.opacity = '1';
-        visibleInRow++;
-      }
-
-      item.appendChild(btn);
-      row.appendChild(item);
-    });
-
-    // Create a single row-level show/hide control (hides/shows the whole line)
-    const rowCtrl = document.createElement('div');
-    rowCtrl.className = 'row-control';
-    const rowBtn = document.createElement('button');
-    rowBtn.textContent = rowVisibility[rowIndex] ? 'Hide' : 'Show';
-    rowBtn.dataset.hidden = (!rowVisibility[rowIndex]).toString(); // reflect state for CSS
-    rowBtn.style.display = editOpen ? 'block' : 'none';
-    rowBtn.onclick = () => {
-      // toggle row visibility and also update per-item visibility for that row so behavior is consistent
-      rowVisibility[rowIndex] = !rowVisibility[rowIndex];
-
-      // compute start index for this row in flatTasks
-      let startIndex = 0;
-      for (let r = 0; r < rowIndex; r++) startIndex += rows[r].length;
-
-      for (let j = 0; j < rows[rowIndex].length; j++) {
-        const idx = startIndex + j;
-        // set per-item visibility to match the row-level choice
-        visibility[idx] = rowVisibility[rowIndex];
-      }
-
-      save(); // now also persists rowVisibility
-      renderTasks();
+    const readJSON = (key, fallback) => {
+      try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+      catch { return fallback; }
     };
-    rowCtrl.appendChild(rowBtn);
-    row.appendChild(rowCtrl);
 
-    // If row has no visible items and we're not in edit mode, hide the whole row
-    if (!editOpen && (visibleInRow === 0 || !rowVisibility[rowIndex])) {
-      row.style.display = 'none';
-    } else {
-      row.style.display = 'flex';
+    const save = () => {
+      localStorage.setItem('state', JSON.stringify(state));
+      localStorage.setItem('visibility', JSON.stringify(visibility));
+      localStorage.setItem('rowVisibility', JSON.stringify(rowVisibility));
+    };
+
+    // ---------- theme ----------
+    const presetFonts = [
+      "system-ui", "Arial", "Verdana", "Tahoma", "Georgia", "Courier New", "Times New Roman",
+      // fun ones (loaded from Google Fonts in <head>)
+      "Orbitron", "Rajdhani", "Press Start 2P", "Bangers", "Fredoka", "Pacifico"
+    ];
+
+    const defaultTheme = {
+      '--bg': '#0f1419',
+      '--fg': '#e7ecf2',
+      '--btn-bg': '#18212b',
+      '--btn-active': '#2b7a68',
+      '--edit-btn': '#243040',
+      '--reset-btn': '#4a2a30',
+      '--edit-menu-bg': '#151d26',
+      '--btn-text-size': '16',
+      '--font-family': 'system-ui'
+    };
+
+    // picker element id -> CSS variable (same localStorage keys as before, so saved themes carry over)
+    const colorInputs = {
+      bgPicker: '--bg',
+      textPicker: '--fg',
+      btnOffPicker: '--btn-bg',
+      btnOnPicker: '--btn-active',
+      editBtnPicker: '--edit-btn',
+      resetBtnPicker: '--reset-btn',
+      editMenuBgPicker: '--edit-menu-bg'
+    };
+
+    const root = document.documentElement;
+    const savedTheme = v => localStorage.getItem(v) || defaultTheme[v];
+
+    presetFonts.forEach(f => {
+      const option = document.createElement('option');
+      option.value = f;
+      option.textContent = f === 'system-ui' ? 'System UI' : f;
+      option.style.fontFamily = f;   // preview each font in the list
+      fontPicker.appendChild(option);
+    });
+
+    Object.entries(colorInputs).forEach(([id, varName]) => {
+      const el = $(id);
+      const value = savedTheme(varName);
+      el.value = value;
+      root.style.setProperty(varName, value);
+      el.addEventListener('input', e => {
+        root.style.setProperty(varName, e.target.value);
+        localStorage.setItem(varName, e.target.value);
+      });
+    });
+
+    (() => {
+      const size = savedTheme('--btn-text-size');
+      textSizePicker.value = size;
+      textSizeValue.textContent = size + ' px';
+      root.style.setProperty('--btn-text-size', size + 'px');
+    })();
+    textSizePicker.addEventListener('input', e => {
+      const val = e.target.value;
+      root.style.setProperty('--btn-text-size', val + 'px');
+      textSizeValue.textContent = val + ' px';
+      localStorage.setItem('--btn-text-size', val);
+    });
+
+    (() => {
+      const font = savedTheme('--font-family');
+      if (![...fontPicker.options].some(o => o.value === font)) {
+        const option = document.createElement('option');
+        option.value = option.textContent = font;
+        fontPicker.appendChild(option);
+      }
+      fontPicker.value = font;
+      root.style.setProperty('--font-family', font);
+    })();
+    fontPicker.addEventListener('change', e => {
+      root.style.setProperty('--font-family', e.target.value);
+      localStorage.setItem('--font-family', e.target.value);
+    });
+
+    // back to the default look; only touches theme settings, not your progress
+    $('resetThemeBtn').onclick = () => {
+      Object.entries(colorInputs).forEach(([id, varName]) => {
+        localStorage.removeItem(varName);
+        $(id).value = defaultTheme[varName];
+        root.style.setProperty(varName, defaultTheme[varName]);
+      });
+      const size = defaultTheme['--btn-text-size'];
+      localStorage.removeItem('--btn-text-size');
+      textSizePicker.value = size;
+      textSizeValue.textContent = size + ' px';
+      root.style.setProperty('--btn-text-size', size + 'px');
+      localStorage.removeItem('--font-family');
+      fontPicker.value = defaultTheme['--font-family'];
+      root.style.setProperty('--font-family', defaultTheme['--font-family']);
+    };
+
+    // ---------- weekly reset ----------
+    // Warframe's weekly reset is Monday 00:00 UTC. Change these two values to move it.
+    const RESET_DAY_UTC = 1;    // 0 = Sunday, 1 = Monday ... 6 = Saturday
+    const RESET_HOUR_UTC = 0;   // 0-23
+    const WEEK = 7 * 864e5;
+
+    // most recent reset moment (ms since epoch)
+    function lastResetTime(now = Date.now()) {
+      const d = new Date(now);
+      const back = (d.getUTCDay() - RESET_DAY_UTC + 7) % 7;
+      let t = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - back, RESET_HOUR_UTC);
+      if (t > now) t -= WEEK;
+      return t;
     }
 
-    taskList.appendChild(row);
-  });
-}
+    // clears completed tasks if a reset moment has passed since we last looked
+    function applyWeeklyReset() {
+      const boundary = lastResetTime();
+      const seen = Number(localStorage.getItem('lastReset'));
+      localStorage.setItem('lastReset', String(boundary));
+      if (seen && seen < boundary) {
+        state = state.map(() => false);
+        save();
+        return true;
+      }
+      return false;
+    }
 
-editBtn.onclick = () => {
-  editMenu.classList.toggle('open');
-  renderTasks();
-};
+    let nextReset = 0;
 
-resetBtn.onclick = () => {
-  // reset to false for all flat tasks
-  state = flatTasks.map(() => false);
-  save();
-  renderTasks();
-};
+    function updateResetInfo() {
+      const next = lastResetTime() + WEEK;
+      const ms = Math.max(0, next - Date.now());
+      const d = Math.floor(ms / 864e5);
+      const p = n => String(n).padStart(2, '0');
+      const hms = `${p(Math.floor(ms % 864e5 / 36e5))}:${p(Math.floor(ms % 36e5 / 6e4))}:${p(Math.floor(ms % 6e4 / 1e3))}`;
+      $('resetCountdown').textContent = d ? `${d}d ${hms}` : hms;
+      // shown by a CSS tooltip (data-tip); only rewritten when it changes
+      const label = 'Resets ' + new Date(next).toLocaleString([], { weekday: 'long', hour: '2-digit', minute: '2-digit' });
+      if ($('resetTimer').dataset.tip !== label) $('resetTimer').dataset.tip = label;
+    }
 
-loadTasks();
-</script>
+    // runs every second: refresh the countdown, and clear tasks the moment a reset passes
+    function tick() {
+      if (Date.now() >= nextReset) {
+        nextReset = lastResetTime() + WEEK;
+        if (rows.length && applyWeeklyReset()) renderTasks();
+      }
+      updateResetInfo();
+    }
+    setInterval(tick, 1000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+    updateResetInfo();
 
+    // ---------- tasks ----------
+    async function loadTasks() {
+      try {
+        const res = await fetch('tasks.json');
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+
+        // arrays become multi-item rows, single objects become one-item rows
+        rows = (data.tasks || []).map(t => Array.isArray(t) ? t : [t]);
+      } catch (err) {
+        taskList.innerHTML = '<p class="error">Couldn\'t load tasks.json. Check that the file exists and is valid JSON.</p>';
+        console.error(err);
+        return;
+      }
+
+      const flat = rows.flat();
+      const savedState = readJSON('state', []);
+      const savedVis = readJSON('visibility', []);
+      state = flat.map((_, i) => i < savedState.length ? !!savedState[i] : false);
+      visibility = flat.map((_, i) => i < savedVis.length ? !!savedVis[i] : true);
+
+      const savedRowVis = readJSON('rowVisibility', null);
+      if (Array.isArray(savedRowVis)) {
+        rowVisibility = rows.map((_, i) => i < savedRowVis.length ? !!savedRowVis[i] : true);
+      } else {
+        // derive from per-item visibility when no row-level data was stored
+        let idx = 0;
+        rowVisibility = rows.map(r => r.some(() => visibility[idx++] ?? true));
+      }
+
+      applyWeeklyReset();
+      save();
+      renderTasks();
+      updateResetInfo();
+    }
+
+    function renderTasks() {
+      taskList.innerHTML = '';
+      const editOpen = editMenu.classList.contains('open');
+      taskList.classList.toggle('editing', editOpen);
+      let counter = 0;
+      let total = 0;
+      let done = 0;
+
+      rows.forEach((rowTasks, rowIndex) => {
+        const rowStart = counter;
+        const row = document.createElement('div');
+        row.className = 'task-row';
+        if (firstRender) { row.classList.add('enter'); row.style.setProperty('--i', rowIndex); }
+        let visibleInRow = 0;
+
+        rowTasks.forEach(t => {
+          const i = counter++;
+          const item = document.createElement('div');
+          item.className = 'task-item';
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'toggle' + (state[i] ? ' active' : '') + (i === justDone ? ' pop' : '');
+          btn.setAttribute('aria-pressed', state[i] ? 'true' : 'false');
+          const label = document.createElement('span');
+          label.className = 'label';
+          label.textContent = t.label || t.name || 'Task';
+          btn.appendChild(label);
+          btn.onclick = () => {
+            state[i] = !state[i];
+            justDone = state[i] ? i : -1;
+            save();
+            renderTasks();
+          };
+
+          const shown = visibility[i] && rowVisibility[rowIndex];
+          if (shown) {
+            visibleInRow++;
+            total++;
+            if (state[i]) done++;
+          } else if (editOpen) {
+            btn.classList.add('dimmed');   // still reachable while editing
+          } else {
+            item.style.display = 'none';
+          }
+
+          item.appendChild(btn);
+          row.appendChild(item);
+        });
+
+        // row-level Hide/Show (only shown while the edit menu is open)
+        const rowCtrl = document.createElement('div');
+        rowCtrl.className = 'row-control';
+        const rowBtn = document.createElement('button');
+        rowBtn.type = 'button';
+        rowBtn.textContent = rowVisibility[rowIndex] ? 'Hide' : 'Show';
+        rowBtn.dataset.hidden = String(!rowVisibility[rowIndex]);
+        rowCtrl.style.display = editOpen ? 'flex' : 'none';
+        rowBtn.onclick = () => {
+          rowVisibility[rowIndex] = !rowVisibility[rowIndex];
+          for (let j = 0; j < rowTasks.length; j++) visibility[rowStart + j] = rowVisibility[rowIndex];
+          save();
+          renderTasks();
+        };
+        rowCtrl.appendChild(rowBtn);
+        row.appendChild(rowCtrl);
+
+        // equal-width columns: one per visible button
+        row.style.setProperty('--cols', Math.max(1, editOpen ? rowTasks.length : visibleInRow));
+
+        if (!editOpen && (visibleInRow === 0 || !rowVisibility[rowIndex])) row.style.display = 'none';
+
+        taskList.appendChild(row);
+      });
+
+      $('progress').textContent = total > 0 && done === total ? 'All done!' : `${done} / ${total} done`;
+      $('progressBar').style.width = total ? `${(done / total) * 100}%` : '0';
+      justDone = -1;
+      firstRender = false;
+    }
+
+    editBtn.onclick = () => {
+      const open = editMenu.classList.toggle('open');
+      editBtn.setAttribute('aria-expanded', String(open));
+      renderTasks();
+    };
+
+    resetBtn.onclick = () => {
+      state = state.map(() => false);
+      save();
+      renderTasks();
+    };
+
+    loadTasks();
+  </script>
 </body>
 </html>
-
-
