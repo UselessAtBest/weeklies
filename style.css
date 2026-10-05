@@ -102,7 +102,7 @@ h1 {
 /* --cols is set per row in JS: one equal column per visible button */
 .task-row { position: relative; display: grid; gap: var(--gap); grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)); }
 
-.task-item { position: relative; min-width: 0; display: flex; }
+.task-item { position: relative; min-width: 0; display: flex; gap: var(--gap); }
 
 /* info ("i") button sits inside the task button, on the right */
 .toggle.has-info { padding-right: 2.6em; }
@@ -331,3 +331,61 @@ h1 {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* ---------- weekly info box ---------- */
+.toggle-wrap { position: relative; flex: 1; min-width: 0; display: flex; }
+
+.week-box {
+  position: relative;
+  flex: none;
+  width: 8.5em;
+  min-height: 2.8em;
+  padding: 0.6em 0.9em;
+  display: flex;
+  align-items: center;
+  font-size: var(--btn-text-size);
+  color: var(--fg);
+  background: var(--btn-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: help;
+  transition: border-color 0.15s ease;
+}
+.week-box:hover, .week-box:focus-visible { border-color: color-mix(in srgb, var(--fg) 28%, transparent); }
+.week-box .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.week-box.unknown { color: var(--muted); font-style: italic; }
+
+.week-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  width: 280px;
+  max-width: 80vw;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  font-style: normal;
+  line-height: 1.5;
+  white-space: pre-line;
+  color: var(--fg);
+  background: var(--edit-menu-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+}
+.week-pop.end { left: auto; right: 0; }
+.week-box:hover .week-pop, .week-box:focus .week-pop { opacity: 1; visibility: visible; transform: none; }
+.week-pop strong { display: block; margin-bottom: 6px; }
+.week-pop img { display: block; width: 100%; max-height: 180px; object-fit: cover; margin-bottom: 8px; border-radius: 8px; }
+.week-pop small { display: block; margin-top: 8px; color: var(--muted); font-size: 0.8rem; }
+.week-pop a { color: color-mix(in srgb, var(--fg) 55%, #4cc9f0); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
+
+/* keep the open popup above the rows below it */
+.task-row:hover, .task-row:focus-within { z-index: 20; }
+
+@media (max-width: 480px) { .week-box { width: 6.5em; } }
