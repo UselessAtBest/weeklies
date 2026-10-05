@@ -54,6 +54,11 @@
     </section>
   </main>
 
+  <aside id="weekPanel" aria-label="Task info" aria-hidden="true">
+    <button id="weekClose" type="button" aria-label="Close info panel">&#10005;</button>
+    <div id="weekBody"></div>
+  </aside>
+
     <script>
     // ---------- state ----------
     let rows = [];            // array of arrays of task objects
@@ -64,6 +69,7 @@
     let justDone = -1;        // task just completed by a click
     let openInfo = -1;        // task whose info popover is open (flat index)
     let refocus = -1;         // info button to re-focus after a re-render
+    let weekData = { date: null, entries: {} };   // loaded from weekly.json
 
     const $ = id => document.getElementById(id);
     const taskList = $('taskList');
@@ -254,6 +260,85 @@
     document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
     updateResetInfo();
 
+    // ---------- weekly info panel ----------
+    // weekly.json: { "date": "YYYY-MM-DD", "entries": { "<task label>": { type, icon?, date?, title, text, image } } }
+    // type "evergreen": never goes stale. type "weekly" (default): only counts if its date (or the top-level
+    // date) falls inside the current week, otherwise the panel says "Not updated yet".
+    const panel = $('weekPanel');
+    let weekOpen = null;   // task label currently shown in the side panel
+
+    function weekInfo(label) {
+      const entry = weekData.entries[label] || null;
+      const type = entry?.type === 'evergreen' ? 'evergreen' : 'weekly';
+      const date = entry?.date || weekData.date || null;
+      const t = Date.parse(date);               // "YYYY-MM-DD" is read as UTC
+      const start = lastResetTime();
+      const fresh = !!entry && (type === 'evergreen' || (t >= start && t < start + WEEK));
+      return { entry, type, date, fresh };
+    }
+
+    function buildWeekBtn(label) {
+      const { entry, type, fresh } = weekInfo(label);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'week-btn' + (label === weekOpen ? ' active' : '') + (fresh ? '' : ' unknown');
+      b.dataset.label = label;
+      b.textContent = fresh ? (entry.icon || (type === 'evergreen' ? '\u{1F332}' : '\u{1F3B2}')) : '\u2754';
+      b.setAttribute('aria-label', 'Info: ' + label);
+      b.setAttribute('aria-pressed', String(label === weekOpen));
+      b.onclick = () => { weekOpen = weekOpen === label ? null : label; syncWeek(); };
+      return b;
+    }
+
+    // update button highlights + panel without rebuilding the task list
+    function syncWeek() {
+      document.querySelectorAll('.week-btn').forEach(el => {
+        const on = el.dataset.label === weekOpen;
+        el.classList.toggle('active', on);
+        el.setAttribute('aria-pressed', String(on));
+      });
+      renderPanel();
+    }
+
+    function renderPanel() {
+      panel.classList.toggle('open', weekOpen !== null);
+      panel.setAttribute('aria-hidden', String(weekOpen === null));
+      if (weekOpen === null) return;
+      const { entry, type, date, fresh } = weekInfo(weekOpen);
+      const body = $('weekBody');
+      body.textContent = '';
+      const add = (tag, cls, text) => {
+        const el = document.createElement(tag);
+        if (cls) el.className = cls;
+        if (text != null) el.textContent = text;
+        body.appendChild(el);
+        return el;
+      };
+
+      if (!entry) add('span', 'tag none', 'No info');
+      else if (type === 'evergreen') add('span', 'tag evergreen', 'Evergreen \u00B7 never resets');
+      else add('span', 'tag weekly', 'Weekly \u00B7 changes each week');
+      add('h2', '', weekOpen);
+
+      if (fresh) {
+        if (entry.title) add('h3', '', entry.title);
+        if (entry.image) {
+          const img = add('img');
+          img.src = entry.image;
+          img.alt = entry.title || weekOpen;
+          img.onerror = () => img.remove();
+        }
+        const text = Array.isArray(entry.text) ? entry.text.join('\n') : entry.text;
+        if (text) appendLinked(add('p'), text);
+        if (type === 'weekly' && date) add('small', '', 'Week of ' + date);
+      } else {
+        add('p', '', entry ? 'Not updated yet.' : 'Unknown \u2014 nothing added for this task yet.');
+        if (entry && date) add('small', '', 'Last data: ' + date);
+      }
+    }
+
+    $('weekClose').onclick = () => { weekOpen = null; syncWeek(); };
+
     // ---------- tasks ----------
     async function loadTasks() {
       try {
@@ -268,6 +353,14 @@
         console.error(err);
         return;
       }
+
+      try {
+        const res = await fetch('weekly.json', { cache: 'no-cache' });
+        if (res.ok) {
+          const d = await res.json();
+          weekData = { date: d.date || null, entries: d.entries || {} };
+        }
+      } catch (err) { console.warn('weekly.json not loaded', err); }
 
       const flat = rows.flat();
       const savedState = readJSON('state', []);
@@ -339,7 +432,10 @@
             item.style.display = 'none';
           }
 
-          item.appendChild(btn);
+          const wrap = document.createElement('div');   // keeps the "i" button anchored to the task button
+          wrap.className = 'toggle-wrap';
+          wrap.appendChild(btn);
+          item.appendChild(wrap);
 
           // optional "i" button: shows the task's "info" text from tasks.json
           const infoText = Array.isArray(t.info) ? t.info.join('\n') : t.info;
@@ -358,7 +454,7 @@
               refocus = i;
               renderTasks();
             };
-            item.appendChild(ib);
+            wrap.appendChild(ib);
             if (i === refocus) toFocus = ib;
             if (i === openInfo && (shown || editOpen)) {
               pop = document.createElement('div');
@@ -370,6 +466,8 @@
               appendLinked(pop, infoText);
             }
           }
+
+          item.appendChild(buildWeekBtn(t.label || t.name || 'Task'));
           row.appendChild(item);
         });
 
@@ -402,6 +500,7 @@
 
       $('progress').textContent = total > 0 && done === total ? 'All done!' : `${done} / ${total} done`;
       $('progressBar').style.width = total ? `${(done / total) * 100}%` : '0';
+      renderPanel();   // keeps the side panel current (e.g. after a weekly reset)
       justDone = -1;
       firstRender = false;
       refocus = -1;
@@ -427,7 +526,9 @@
       renderTasks();
     });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && openInfo !== -1) { openInfo = -1; renderTasks(); }
+      if (e.key !== 'Escape') return;
+      if (openInfo !== -1) { openInfo = -1; renderTasks(); }
+      else if (weekOpen !== null) { weekOpen = null; syncWeek(); }
     });
 
     loadTasks();
