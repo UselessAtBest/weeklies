@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-05",
+  "entries": {
+    "Some Task Label": {
+      "title": "Short text shown in the box",
+      "text": "Longer details shown on hover. Links like [wiki](https://wiki.warframe.com) work too.",
+      "image": "img/some-image.png"
+    },
+    "Another Task": {
+      "date": "2026-09-28",
+      "title": "Old data",
+      "text": "This one has its own date, so it overrides the top-level one."
+    }
+  }
+}
