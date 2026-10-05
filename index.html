@@ -64,6 +64,7 @@
     let justDone = -1;        // task just completed by a click
     let openInfo = -1;        // task whose info popover is open (flat index)
     let refocus = -1;         // info button to re-focus after a re-render
+    let weekData = { date: null, entries: {} };   // loaded from weekly.json
 
     const $ = id => document.getElementById(id);
     const taskList = $('taskList');
@@ -254,6 +255,70 @@
     document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
     updateResetInfo();
 
+    // ---------- weekly info boxes ----------
+    // weekly.json: { "date": "YYYY-MM-DD", "entries": { "<task label>": { date?, title, text, image } } }
+    // An entry only counts if its date (or the top-level date) falls inside the current week.
+    function weekInfo(label) {
+      const entry = weekData.entries[label] || null;
+      const date = entry?.date || weekData.date;
+      const t = Date.parse(date);               // "YYYY-MM-DD" is read as UTC
+      const start = lastResetTime();
+      const fresh = !!entry && t >= start && t < start + WEEK;
+      return { fresh, entry, date };
+    }
+
+    function buildWeekBox(label, alignEnd) {
+      const { fresh, entry, date } = weekInfo(label);
+
+      const box = document.createElement('div');
+      box.className = 'week-box' + (fresh ? '' : ' unknown');
+      box.tabIndex = 0;   // keyboard focus / tap on touch screens also opens it
+      box.setAttribute('aria-label', 'This week: ' + label);
+
+      const txt = document.createElement('span');
+      txt.className = 'label';
+      txt.textContent = fresh ? (entry.title || 'This week') : 'Unknown';
+      box.appendChild(txt);
+
+      const pop = document.createElement('div');
+      pop.className = 'week-pop' + (alignEnd ? ' end' : '');
+      pop.setAttribute('role', 'tooltip');
+
+      const head = document.createElement('strong');
+      head.textContent = label;
+      pop.appendChild(head);
+
+      if (fresh) {
+        if (entry.image) {
+          const img = document.createElement('img');
+          img.src = entry.image;
+          img.alt = entry.title || label;
+          img.loading = 'lazy';
+          img.onerror = () => img.remove();
+          pop.appendChild(img);
+        }
+        const body = Array.isArray(entry.text) ? entry.text.join('\n') : entry.text;
+        if (body) {
+          const p = document.createElement('div');
+          appendLinked(p, body);
+          pop.appendChild(p);
+        }
+      } else {
+        const p = document.createElement('div');
+        p.textContent = 'Not updated yet.';
+        pop.appendChild(p);
+      }
+
+      if (date && entry) {
+        const small = document.createElement('small');
+        small.textContent = (fresh ? 'Week of ' : 'Last data: ') + date;
+        pop.appendChild(small);
+      }
+
+      box.appendChild(pop);
+      return box;
+    }
+
     // ---------- tasks ----------
     async function loadTasks() {
       try {
@@ -268,6 +333,14 @@
         console.error(err);
         return;
       }
+
+      try {
+        const res = await fetch('weekly.json', { cache: 'no-cache' });
+        if (res.ok) {
+          const d = await res.json();
+          weekData = { date: d.date || null, entries: d.entries || {} };
+        }
+      } catch (err) { console.warn('weekly.json not loaded', err); }
 
       const flat = rows.flat();
       const savedState = readJSON('state', []);
@@ -307,7 +380,7 @@
         let visibleInRow = 0;
         let pop = null;
 
-        rowTasks.forEach(t => {
+        rowTasks.forEach((t, ti) => {
           const i = counter++;
           const item = document.createElement('div');
           item.className = 'task-item';
@@ -339,7 +412,10 @@
             item.style.display = 'none';
           }
 
-          item.appendChild(btn);
+          const wrap = document.createElement('div');   // keeps the "i" button anchored to the task button
+          wrap.className = 'toggle-wrap';
+          wrap.appendChild(btn);
+          item.appendChild(wrap);
 
           // optional "i" button: shows the task's "info" text from tasks.json
           const infoText = Array.isArray(t.info) ? t.info.join('\n') : t.info;
@@ -358,7 +434,7 @@
               refocus = i;
               renderTasks();
             };
-            item.appendChild(ib);
+            wrap.appendChild(ib);
             if (i === refocus) toFocus = ib;
             if (i === openInfo && (shown || editOpen)) {
               pop = document.createElement('div');
@@ -370,6 +446,8 @@
               appendLinked(pop, infoText);
             }
           }
+
+          item.appendChild(buildWeekBox(t.label || t.name || 'Task', ti === rowTasks.length - 1));
           row.appendChild(item);
         });
 
